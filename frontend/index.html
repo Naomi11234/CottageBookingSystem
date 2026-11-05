@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>נופש בקליק - מערכת הזמנת צימרים יוקרתית</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- תפריט עליון יוקרתי -->
+    <nav class="top-nav">
+        <a href="index.html" class="logo">🌲 נופש בקליק</a>
+        <div class="nav-links">
+            <span id="welcome-user" style="display:none;"></span>
+            <a href="my-bookings.html" id="my-bookings-link" style="display:none;">ההזמנות שלי</a>
+            <a href="admin.html" id="admin-link" style="display:none;">פאנל ניהול</a>
+            <a href="login.html" id="auth-link">התחברות / הרשמה</a>
+            <button id="logout-btn" style="display:none;" onclick="logout()">התנתק</button>
+        </div>
+    </nav>
+
+    <!-- באנר כניסה ראשי בטבע -->
+    <header class="hero-header">
+        <div class="hero-content">
+            <h1>חופשה כפרית מושלמת בטבע</h1>
+            <p>בקתות עץ מבודדות, מרחבים ירוקים ורוגע אינסופי</p>
+        </div>
+    </header>
+
+    <main class="container">
+        
+        <!-- תיבת חיפוש וסינון חכם -->
+        <section class="filter-card">
+            <h3>🔍 חיפוש חכם במאגר הצימרים</h3>
+            <div class="filter-grid">
+                <input type="text" id="search-input" placeholder="חפשי לפי שם צימר או יישוב (למשל: אמירים)..." oninput="filterCottages()">
+                
+                <select id="region-filter" onchange="filterCottages()">
+                    <option value="">כל האזורים בארץ</option>
+                    <option value="הצפון">הצפון</option>
+                    <option value="המרכז">המרכז</option>
+                    <option value="הדרום">הדרום</option>
+                </select>
+
+                <select id="price-filter" onchange="filterCottages()">
+                    <option value="">סינון לפי תקציב (הכל)</option>
+                    <option value="700">עד ₪700 ללילה</option>
+                    <option value="900">עד ₪900 ללילה</option>
+                    <option value="2000">מעל ₪900 ללילה</option>
+                </select>
+            </div>
+        </section>
+
+        <!-- רשת הצימרים והסוויטות -->
+        <h2 class="section-title">הצימרים והסוויטות שלנו</h2>
+        <div id="cottages-grid" class="cottages-grid">
+            <!-- נטען אוטומטית מקובץ app.js -->
+        </div>
+
+    </main>
+
+    <!-- פוטר תחתי -->
+    <footer>
+        <p>© 2026 נופש בקליק - מערכת לניהול והזמנת צימרים יוקרתית</p>
+    </footer>
+
+    <!-- קישור לקבצי הנתונים והלוגיקה -->
+    <script src="db.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

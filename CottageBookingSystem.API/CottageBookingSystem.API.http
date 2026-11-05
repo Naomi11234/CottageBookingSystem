@@ -1,0 +1,6 @@
+@CottageBookingSystem.API_HostAddress = http://localhost:5109
+
+GET {{CottageBookingSystem.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

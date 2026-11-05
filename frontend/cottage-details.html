@@ -1,0 +1,1123 @@
+
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>פרטי צימר והזמנה | נופש בקליק</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f7f9fb;
+      color: #193529;
+    }
+
+    header {
+      background: #1d3a2b;
+      color: white;
+      padding: 20px 6%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 15px;
+      flex-wrap: wrap;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 28px;
+    }
+
+    .back-link {
+      color: white;
+      text-decoration: none;
+      padding: 10px 18px;
+      border: 1px solid #829a8d;
+      border-radius: 25px;
+    }
+
+    main {
+      max-width: 1100px;
+      margin: 35px auto;
+      padding: 0 18px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 18px;
+      box-shadow: 0 6px 25px rgba(0,0,0,.07);
+      overflow: hidden;
+      margin-bottom: 25px;
+    }
+
+    .cottage-image {
+      width: 100%;
+      height: 350px;
+      object-fit: cover;
+      display: block;
+    }
+
+    .content {
+      padding: 30px;
+    }
+
+    h2 {
+      margin-top: 0;
+      font-size: 30px;
+    }
+
+    h3 {
+      margin-top: 0;
+    }
+
+    .details {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin: 20px 0;
+    }
+
+    .detail {
+      background: #f0f7f2;
+      border-radius: 12px;
+      padding: 13px 18px;
+    }
+
+    .price {
+      font-size: 28px;
+      font-weight: bold;
+      color: #17643a;
+      margin: 20px 0;
+    }
+
+    .amenities {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 15px;
+    }
+
+    .amenity {
+      background: #e8f5ec;
+      color: #1c603a;
+      padding: 9px 15px;
+      border-radius: 25px;
+      font-size: 14px;
+    }
+
+    .booking-form {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    label {
+      font-weight: bold;
+    }
+
+    input {
+      padding: 13px;
+      border: 1px solid #cbd5d1;
+      border-radius: 10px;
+      font-size: 16px;
+      width: 100%;
+    }
+
+    button {
+      background: #1d3a2b;
+      color: white;
+      border: none;
+      padding: 15px 25px;
+      border-radius: 12px;
+      font-size: 17px;
+      cursor: pointer;
+    }
+
+    button:hover:not(:disabled) {
+      background: #28533c;
+    }
+
+    button:disabled {
+      opacity: .55;
+      cursor: not-allowed;
+    }
+
+    .full-width {
+      grid-column: 1 / -1;
+    }
+
+    .message {
+      padding: 15px;
+      border-radius: 10px;
+      margin: 15px 0;
+    }
+
+    .error {
+      background: #fff0f0;
+      color: #a21c1c;
+    }
+
+    .success {
+      background: #e8f7ec;
+      color: #17643a;
+    }
+
+    .info {
+      background: #edf5ff;
+      color: #204c77;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    /* עיצוב לוח השנה */
+
+    .calendar-wrapper {
+      grid-column: 1 / -1;
+      background: #ffffff;
+      border: 1px solid #e2e8e5;
+      border-radius: 20px;
+      padding: 24px;
+    }
+
+    .calendar-description {
+      color: #64748b;
+      margin-bottom: 25px;
+    }
+
+    .calendar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .calendar-header h3 {
+      margin: 0;
+      color: #1d3a2b;
+      font-size: 22px;
+    }
+
+    .calendar-nav {
+      width: 42px;
+      height: 42px;
+      padding: 0;
+      border-radius: 50%;
+      background: #edf5ef;
+      color: #1d3a2b;
+    }
+
+    .calendar-nav:hover:not(:disabled) {
+      background: #d7e9dc;
+    }
+
+    .calendar-weekdays,
+    .calendar-days {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      gap: 6px;
+    }
+
+    .calendar-weekdays {
+      margin-bottom: 10px;
+      text-align: center;
+      color: #64748b;
+      font-weight: bold;
+    }
+
+    .calendar-weekdays span {
+      padding: 10px 0;
+    }
+
+    .calendar-day {
+      min-width: 0;
+      height: 48px;
+      padding: 0;
+      background: #f4f8f5;
+      color: #193529;
+      border: none;
+      border-radius: 12px;
+      font-size: 15px;
+      transition: background .2s;
+    }
+
+    .calendar-day:hover:not(:disabled) {
+      background: #d9f0df;
+    }
+
+    .calendar-day.selected {
+      background: #17643a;
+      color: white;
+      font-weight: bold;
+    }
+
+    .calendar-day.in-range {
+      background: #ccebd6;
+      color: #17643a;
+    }
+
+    .calendar-day.occupied {
+      background: #f1f1f1;
+      color: #a1a1aa;
+      text-decoration: line-through;
+      opacity: 1;
+    }
+
+    .calendar-day.past {
+      opacity: .35;
+    }
+
+    .calendar-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 18px;
+      margin-top: 22px;
+      color: #475569;
+      font-size: 14px;
+    }
+
+    .calendar-selection {
+      margin-top: 20px;
+      padding: 18px;
+      background: #f0f7f2;
+      border-radius: 12px;
+      line-height: 2;
+    }
+
+    .calendar-selection strong {
+      color: #17643a;
+    }
+
+    .booking-summary {
+      background: #f0f7f2;
+      border-radius: 12px;
+      padding: 18px;
+      font-weight: bold;
+      color: #17643a;
+    }
+
+    .bookings-link {
+      display: inline-block;
+      margin-top: 12px;
+      color: #17643a;
+      font-weight: bold;
+    }
+
+    footer {
+      background: #1d3a2b;
+      color: white;
+      text-align: center;
+      padding: 30px;
+      margin-top: 50px;
+    }
+
+    @media (max-width: 650px) {
+      .booking-form {
+        grid-template-columns: 1fr;
+      }
+
+      .cottage-image {
+        height: 230px;
+      }
+
+      .content {
+        padding: 20px;
+      }
+
+      .calendar-wrapper {
+        padding: 12px;
+      }
+
+      .calendar-day {
+        height: 39px;
+        font-size: 13px;
+      }
+
+      .calendar-header h3 {
+        font-size: 18px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <h1>🌲 נופש בקליק</h1>
+  <a class="back-link" href="index.html">
+    → חזרה לכל הצימרים
+  </a>
+</header>
+
+<main>
+
+  <div id="loading" class="message info">
+    טוען את פרטי הצימר מהשרת...
+  </div>
+
+  <div id="error" class="message error hidden"></div>
+
+  <div id="cottage-section" class="hidden">
+
+    <section class="card">
+
+      <img
+        id="cottage-image"
+        class="cottage-image"
+        alt="תמונת הצימר"
+      >
+
+      <div class="content">
+
+        <h2 id="cottage-name"></h2>
+
+        <div class="details">
+          <div class="detail">
+            📍 <span id="cottage-location"></span>
+          </div>
+
+          <div class="detail">
+            👥 עד <span id="cottage-guests"></span> אורחים
+          </div>
+        </div>
+
+        <div class="price">
+          ₪<span id="cottage-price"></span> ללילה
+        </div>
+
+        <h3>✨ מה יש בצימר?</h3>
+        <div id="amenities" class="amenities"></div>
+
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="content">
+
+        <h2>📅 הזמנת הצימר</h2>
+        <p>בחרי את תאריכי החופשה ומספר האורחים.</p>
+
+        <form id="booking-form" class="booking-form">
+
+          <div class="calendar-wrapper">
+
+            <h3>📅 לוח זמינות והזמנות</h3>
+
+            <p class="calendar-description">
+              בחרי תחילה תאריך כניסה ולאחר מכן תאריך יציאה.
+              תאריכים תפוסים מסומנים באפור.
+            </p>
+
+            <div class="calendar-header">
+
+              <button
+                type="button"
+                id="prev-month"
+                class="calendar-nav"
+                aria-label="חודש קודם"
+              >
+                ❯
+              </button>
+
+              <h3 id="calendar-month"></h3>
+
+              <button
+                type="button"
+                id="next-month"
+                class="calendar-nav"
+                aria-label="חודש הבא"
+              >
+                ❮
+              </button>
+
+            </div>
+
+            <div class="calendar-weekdays">
+              <span>א</span>
+              <span>ב</span>
+              <span>ג</span>
+              <span>ד</span>
+              <span>ה</span>
+              <span>ו</span>
+              <span>ש</span>
+            </div>
+
+            <div id="calendar-days" class="calendar-days"></div>
+
+            <div class="calendar-legend">
+              <span>🟢 נבחר</span>
+              <span>⬜ פנוי</span>
+              <span>🚫 תפוס</span>
+            </div>
+
+            <div class="calendar-selection">
+              <div>
+                כניסה:
+                <strong id="selected-check-in">לא נבחר</strong>
+              </div>
+
+              <div>
+                יציאה:
+                <strong id="selected-check-out">לא נבחר</strong>
+              </div>
+            </div>
+
+            <input type="hidden" id="check-in">
+            <input type="hidden" id="check-out">
+
+          </div>
+
+          <div class="field full-width">
+            <label for="guests">מספר אורחים</label>
+
+            <input
+              id="guests"
+              type="number"
+              min="1"
+              value="1"
+              required
+            >
+          </div>
+
+          <div
+            id="booking-summary"
+            class="booking-summary full-width hidden"
+          ></div>
+
+          <div
+            id="booking-message"
+            class="message hidden full-width"
+            aria-live="polite"
+          ></div>
+
+          <button
+            id="booking-button"
+            class="full-width"
+            type="submit"
+            disabled
+          >
+            שליחת הזמנה
+          </button>
+
+        </form>
+
+      </div>
+    </section>
+
+  </div>
+
+</main>
+
+<footer>
+  © 2026 נופש בקליק - מערכת לניהול והזמנת צימרים
+</footer>
+
+<script>
+  'use strict';
+
+  const API_BASE_URL = 'https://localhost:7077/api';
+
+  const params = new URLSearchParams(window.location.search);
+  const cottageId = Number(params.get('id'));
+
+  const $ = id => document.getElementById(id);
+
+  let currentCottage = null;
+  let occupiedRanges = [];
+  let availabilityLoaded = false;
+
+  let calendarDate = new Date();
+  calendarDate.setDate(1);
+
+  const calendarMonths = [
+    'ינואר', 'פברואר', 'מרץ', 'אפריל',
+    'מאי', 'יוני', 'יולי', 'אוגוסט',
+    'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר'
+  ];
+
+  function getToken() {
+    return localStorage.getItem('authToken');
+  }
+
+  function showError(message) {
+    $('loading').classList.add('hidden');
+    $('cottage-section').classList.add('hidden');
+    $('error').textContent = message;
+    $('error').classList.remove('hidden');
+  }
+
+  async function apiRequest(path, options = {}) {
+    const headers = {
+      'Content-Type': 'application/json',
+      ...(options.headers || {})
+    };
+
+    const token = getToken();
+
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+
+    const response = await fetch(
+      `${API_BASE_URL}${path}`,
+      { ...options, headers }
+    );
+
+    if (!response.ok) {
+      let message = `שגיאת שרת: ${response.status}`;
+
+      try {
+        const data = await response.json();
+
+        if (data.errors) {
+          message = Object.values(data.errors)
+            .flat()
+            .join(' | ');
+        } else {
+          message = data.message || data.title || message;
+        }
+      } catch {
+        // אין פירוט נוסף
+      }
+
+      const error = new Error(message);
+      error.status = response.status;
+      throw error;
+    }
+
+    if (response.status === 204) {
+      return null;
+    }
+
+    const contentType =
+      response.headers.get('content-type') || '';
+
+    return contentType.includes('application/json')
+      ? response.json()
+      : null;
+  }
+
+  function getImageUrl(cottage) {
+    const image = cottage.imageUrl || cottage.image;
+
+    if (typeof image === 'string') {
+      if (image.startsWith('/')) {
+        return `https://localhost:7077${image}`;
+      }
+
+      if (/^https?:\/\//i.test(image)) {
+        return image;
+      }
+    }
+
+    return 'https://images.unsplash.com/photo-1542718610-a1d656d1884c?auto=format&fit=crop&w=1200&q=80';
+  }
+
+  function formatAmenity(name) {
+    const names = {
+      'wi-fi': '📶 Wi-Fi',
+      'wifi': '📶 Wi-Fi',
+      'pool': '🏊 בריכה',
+      'hot tub': '🛁 ג׳קוזי',
+      'jacuzzi': '🛁 ג׳קוזי',
+      'parking': '🅿️ חניה',
+      'air conditioning': '❄️ מיזוג אוויר'
+    };
+
+    const value = String(name || '').trim();
+
+    return names[value.toLowerCase()] || `✓ ${value}`;
+  }
+
+  function dateToLocalString(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+
+    return `${year}-${month}-${day}`;
+  }
+
+  function formatCalendarDate(value) {
+    if (!value) return 'לא נבחר';
+
+    const [year, month, day] = value.split('-');
+    return `${day}/${month}/${year}`;
+  }
+
+  function calculateNights(checkIn, checkOut) {
+    if (!checkIn || !checkOut) return 0;
+
+    const start = Date.parse(`${checkIn}T00:00:00Z`);
+    const end = Date.parse(`${checkOut}T00:00:00Z`);
+
+    return Math.round((end - start) / 86400000);
+  }
+
+  function isOccupied(dateString) {
+    return occupiedRanges.some(range =>
+      dateString >= range.startDate &&
+      dateString < range.endDate
+    );
+  }
+
+  function isRangeAvailable(start, end) {
+    if (!start || !end || start >= end) {
+      return false;
+    }
+
+    return !occupiedRanges.some(range =>
+      start < range.endDate &&
+      range.startDate < end
+    );
+  }
+
+  function showBookingMessage(message, success = false) {
+    const element = $('booking-message');
+
+    element.textContent = message;
+    element.className =
+      `message full-width ${success ? 'success' : 'error'}`;
+  }
+
+  function clearBookingMessage() {
+    const element = $('booking-message');
+    element.textContent = '';
+    element.className = 'message hidden full-width';
+  }
+
+  function updateBookingSummary() {
+    const summary = $('booking-summary');
+
+    if (!currentCottage) {
+      summary.classList.add('hidden');
+      return;
+    }
+
+    const checkIn = $('check-in').value;
+    const checkOut = $('check-out').value;
+
+    const nights = calculateNights(checkIn, checkOut);
+
+    if (nights <= 0) {
+      summary.textContent = '';
+      summary.classList.add('hidden');
+      return;
+    }
+
+    const price = Number(currentCottage.pricePerNight);
+    const total = nights * price;
+
+    summary.textContent =
+      `${nights} לילות × ₪${price.toLocaleString('he-IL')} = ₪${total.toLocaleString('he-IL')}`;
+
+    summary.classList.remove('hidden');
+  }
+
+  function updateSelectedDates() {
+    $('selected-check-in').textContent =
+      formatCalendarDate($('check-in').value);
+
+    $('selected-check-out').textContent =
+      formatCalendarDate($('check-out').value);
+
+    updateBookingSummary();
+  }
+
+  function selectCalendarDate(dateString) {
+    if (!availabilityLoaded) {
+      return;
+    }
+
+    const start = $('check-in').value;
+    const end = $('check-out').value;
+
+    if (!start || end || dateString <= start) {
+      $('check-in').value = dateString;
+      $('check-out').value = '';
+    } else if (isRangeAvailable(start, dateString)) {
+      $('check-out').value = dateString;
+    } else {
+      showBookingMessage(
+        'בטווח שבחרת יש תאריכים תפוסים. בחרי תאריכים אחרים.'
+      );
+      return;
+    }
+
+    clearBookingMessage();
+    updateSelectedDates();
+    renderCalendar();
+  }
+
+  function renderCalendar() {
+    const year = calendarDate.getFullYear();
+    const month = calendarDate.getMonth();
+
+    $('calendar-month').textContent =
+      `${calendarMonths[month]} ${year}`;
+
+    const container = $('calendar-days');
+    container.replaceChildren();
+
+    const firstDay = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+    for (let i = 0; i < firstDay; i++) {
+      const empty = document.createElement('span');
+      container.appendChild(empty);
+    }
+
+    const today = dateToLocalString(new Date());
+    const start = $('check-in').value;
+    const end = $('check-out').value;
+
+    for (let day = 1; day <= daysInMonth; day++) {
+      const date = new Date(year, month, day);
+      const key = dateToLocalString(date);
+
+      const button = document.createElement('button');
+
+      button.type = 'button';
+      button.className = 'calendar-day';
+      button.textContent = day;
+      button.setAttribute(
+        'aria-label',
+        formatCalendarDate(key)
+      );
+
+      const occupied = isOccupied(key);
+      const past = key <= today;
+
+      if (occupied) {
+        button.classList.add('occupied');
+        button.disabled = true;
+        button.title = 'התאריך תפוס';
+      } else if (past) {
+        button.classList.add('past');
+        button.disabled = true;
+        button.title = 'לא ניתן להזמין תאריך זה';
+      } else if (!availabilityLoaded) {
+        button.disabled = true;
+        button.title = 'טוען זמינות';
+      }
+
+      if (key === start || key === end) {
+        button.classList.add('selected');
+      } else if (start && end && key > start && key < end) {
+        button.classList.add('in-range');
+      }
+
+      button.addEventListener('click', () => {
+        selectCalendarDate(key);
+      });
+
+      container.appendChild(button);
+    }
+
+    const currentMonth = new Date();
+    currentMonth.setDate(1);
+
+    $('prev-month').disabled =
+      year === currentMonth.getFullYear() &&
+      month === currentMonth.getMonth();
+  }
+
+  async function loadOccupiedDates() {
+    availabilityLoaded = false;
+    $('booking-button').disabled = true;
+    renderCalendar();
+
+    try {
+      const ranges = await apiRequest(
+        `/Cottages/${cottageId}/occupied-dates`
+      );
+
+      if (!Array.isArray(ranges)) {
+        throw new Error(
+          'השרת החזיר תאריכים בפורמט לא תקין.'
+        );
+      }
+
+      occupiedRanges = ranges.map(range => ({
+        startDate: String(range.startDate).slice(0, 10),
+        endDate: String(range.endDate).slice(0, 10)
+      }));
+
+      availabilityLoaded = true;
+      $('booking-button').disabled = false;
+
+      // אם הבחירה הקיימת כבר אינה פנויה, מנקים אותה
+      const start = $('check-in').value;
+      const end = $('check-out').value;
+
+      if (
+        (start && isOccupied(start)) ||
+        (start && end && !isRangeAvailable(start, end))
+      ) {
+        $('check-in').value = '';
+        $('check-out').value = '';
+        updateSelectedDates();
+      }
+
+      renderCalendar();
+
+    } catch (error) {
+      console.error('שגיאה בטעינת זמינות:', error);
+
+      availabilityLoaded = false;
+      $('booking-button').disabled = true;
+
+      showBookingMessage(
+        'לא ניתן לטעון את התאריכים הפנויים: ' +
+        error.message
+      );
+
+      renderCalendar();
+    }
+  }
+
+  async function loadCottage() {
+    if (!Number.isInteger(cottageId) || cottageId <= 0) {
+      showError('לא נבחר צימר תקין.');
+      return;
+    }
+
+    try {
+      const cottage = await apiRequest(
+        `/Cottages/${cottageId}`
+      );
+
+      if (!cottage || !cottage.id) {
+        throw new Error('הצימר לא נמצא במערכת.');
+      }
+
+      currentCottage = cottage;
+
+      $('cottage-name').textContent = cottage.name;
+      $('cottage-location').textContent = cottage.location;
+      $('cottage-guests').textContent = cottage.maxGuests;
+
+      $('cottage-price').textContent =
+        Number(cottage.pricePerNight).toLocaleString('he-IL');
+
+      $('cottage-image').src = getImageUrl(cottage);
+      $('cottage-image').alt = cottage.name;
+
+      $('cottage-image').onerror = function () {
+        this.style.display = 'none';
+      };
+
+      const amenitiesContainer = $('amenities');
+      amenitiesContainer.replaceChildren();
+
+      const amenities = Array.isArray(cottage.amenities)
+        ? cottage.amenities
+        : [];
+
+      if (amenities.length === 0) {
+        amenitiesContainer.textContent =
+          'לא צוינו מתקנים לצימר זה.';
+      } else {
+        amenities.forEach(name => {
+          const item = document.createElement('span');
+          item.className = 'amenity';
+          item.textContent = formatAmenity(name);
+          amenitiesContainer.appendChild(item);
+        });
+      }
+
+      $('guests').max = cottage.maxGuests;
+
+      document.title = `${cottage.name} | נופש בקליק`;
+
+      $('loading').classList.add('hidden');
+      $('cottage-section').classList.remove('hidden');
+
+    } catch (error) {
+      console.error('שגיאה בטעינת הצימר:', error);
+
+      showError(
+        'לא ניתן לטעון את פרטי הצימר: ' + error.message
+      );
+    }
+  }
+
+  async function submitBooking(event) {
+    event.preventDefault();
+
+    if (!currentCottage || !availabilityLoaded) {
+      showBookingMessage(
+        'פרטי הצימר או הזמינות עדיין לא נטענו.'
+      );
+      return;
+    }
+
+    const token = getToken();
+
+    if (!token) {
+      showBookingMessage(
+        'כדי להזמין צימר יש להתחבר תחילה למערכת.'
+      );
+      return;
+    }
+
+    const checkIn = $('check-in').value;
+    const checkOut = $('check-out').value;
+    const guests = Number($('guests').value);
+
+    const nights = calculateNights(checkIn, checkOut);
+    const today = dateToLocalString(new Date());
+
+    if (!checkIn || !checkOut) {
+      showBookingMessage(
+        'בחרי בלוח השנה תאריך כניסה ותאריך יציאה.'
+      );
+      return;
+    }
+
+    if (checkIn <= today) {
+      showBookingMessage(
+        'תאריך הכניסה חייב להיות בעתיד.'
+      );
+      return;
+    }
+
+    if (nights <= 0) {
+      showBookingMessage(
+        'תאריך היציאה חייב להיות אחרי תאריך הכניסה.'
+      );
+      return;
+    }
+
+    if (!isRangeAvailable(checkIn, checkOut)) {
+      showBookingMessage(
+        'התאריכים שבחרת כבר תפוסים. בחרי טווח אחר.'
+      );
+      return;
+    }
+
+    if (
+      !Number.isInteger(guests) ||
+      guests < 1 ||
+      guests > Number(currentCottage.maxGuests)
+    ) {
+      showBookingMessage(
+        `מספר האורחים חייב להיות בין 1 ל-${currentCottage.maxGuests}.`
+      );
+      return;
+    }
+
+    const button = $('booking-button');
+
+    button.disabled = true;
+    button.textContent = 'שולח הזמנה לשרת...';
+
+    try {
+      const bookingPayload = {
+        cottageId: currentCottage.id,
+        startDate: checkIn,
+        endDate: checkOut,
+        guestsCount: guests
+      };
+
+      const result = await apiRequest('/Bookings', {
+        method: 'POST',
+        body: JSON.stringify(bookingPayload)
+      });
+
+      console.log('תשובת שרת ההזמנות:', result);
+
+      showBookingMessage(
+        'בקשת ההזמנה נשמרה בהצלחה! הסטטוס שלה ממתין לאישור.',
+        true
+      );
+
+      const bookingsLink = document.createElement('a');
+      bookingsLink.href = 'my-bookings.html';
+      bookingsLink.className = 'bookings-link';
+      bookingsLink.textContent =
+        'לצפייה בהזמנות שלי';
+
+      $('booking-message').appendChild(bookingsLink);
+
+      $('booking-form').reset();
+
+      $('check-in').value = '';
+      $('check-out').value = '';
+
+      updateSelectedDates();
+
+      await loadOccupiedDates();
+
+    } catch (error) {
+      console.error('שגיאה בהזמנה:', error);
+
+      if (error.status === 409) {
+        showBookingMessage(
+          'הצימר אינו זמין בתאריכים שבחרת. בחרי תאריכים אחרים.'
+        );
+
+        await loadOccupiedDates();
+
+      } else if (error.status === 401) {
+        showBookingMessage(
+          'ההתחברות שלך פגה או אינה תקינה. התחברי מחדש.'
+        );
+      } else {
+        showBookingMessage(
+          'ההזמנה לא נשמרה: ' + error.message
+        );
+      }
+
+    } finally {
+      button.disabled = !availabilityLoaded;
+      button.textContent = 'שליחת הזמנה';
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', async () => {
+    $('prev-month').addEventListener('click', () => {
+      calendarDate.setMonth(
+        calendarDate.getMonth() - 1
+      );
+
+      renderCalendar();
+    });
+
+    $('next-month').addEventListener('click', () => {
+      calendarDate.setMonth(
+        calendarDate.getMonth() + 1
+      );
+
+      renderCalendar();
+    });
+
+    $('booking-form').addEventListener(
+      'submit',
+      submitBooking
+    );
+
+    renderCalendar();
+
+    await loadCottage();
+
+    if (currentCottage) {
+      await loadOccupiedDates();
+    }
+  });
+</script>
+
+</body>
+</html>

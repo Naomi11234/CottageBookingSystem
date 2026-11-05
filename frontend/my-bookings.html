@@ -1,0 +1,376 @@
+
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>נופש בקליק - ההזמנות שלי</title>
+    <link rel="stylesheet" href="style.css">
+
+    <style>
+        .booking-card {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.07);
+            border: 1px solid #f1f5f9;
+        }
+
+        .booking-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .booking-status {
+            display: inline-block;
+            padding: 7px 14px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .booking-status.confirmed {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .booking-status.cancelled {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .booking-card h3 {
+            margin: 15px 0;
+            color: var(--primary-color);
+            font-size: 1.6rem;
+        }
+
+        .booking-detail {
+            color: #64748b;
+            margin: 10px 0;
+            font-size: 1.05rem;
+        }
+
+        .booking-number {
+            color: #64748b;
+            font-size: 0.95rem;
+        }
+
+        .bookings-message {
+            text-align: center;
+            background: white;
+            padding: 60px 30px;
+            border-radius: 20px;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.07);
+        }
+
+        .bookings-message a {
+            display: inline-block;
+            margin-top: 20px;
+            text-decoration: none;
+            padding: 14px 30px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav class="top-nav"
+         style="background: var(--primary-color); position: relative; padding: 20px 40px;">
+
+        <a href="index.html" class="logo">
+            🌲 נופש בקליק
+        </a>
+
+        <div class="nav-links">
+            <a href="index.html">← חזרה לדף הבית</a>
+        </div>
+    </nav>
+
+    <header class="hero-header" style="height: 40vh;">
+        <div class="hero-content">
+            <h1>ניהול ההזמנות שלי</h1>
+            <p>כל החופשות שהזמנת במערכת מרוכזות כאן במקום אחד</p>
+        </div>
+    </header>
+
+    <main class="container"
+          style="margin-top: -30px; margin-bottom: 80px; position: relative; z-index: 10;">
+
+        <div id="bookings-list"
+             style="display: flex; flex-direction: column; gap: 20px;">
+
+            <div class="bookings-message">
+                <h2>טוען את ההזמנות שלך מהשרת...</h2>
+            </div>
+
+        </div>
+    </main>
+
+    <footer>
+        <p>© 2026 נופש בקליק - מערכת לניהול והזמנת צימרים</p>
+    </footer>
+
+    <script>
+        const API_BASE_URL = 'https://localhost:7077/api';
+
+        const container = document.getElementById('bookings-list');
+
+        function escapeHtml(value) {
+            return String(value ?? '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function formatDate(value) {
+            if (!value) return 'לא צוין';
+
+            const parts = String(value)
+                .substring(0, 10)
+                .split('-');
+
+            if (parts.length !== 3) {
+                return escapeHtml(value);
+            }
+
+            return `${parts[2]}/${parts[1]}/${parts[0]}`;
+        }
+
+        function getBookingStatus(status) {
+            const normalized = String(status || '').toLowerCase();
+
+            if (normalized === 'confirmed' ||
+                normalized === 'approved') {
+                return {
+                    text: 'הזמנה מאושרת ✔',
+                    cssClass: 'confirmed'
+                };
+            }
+
+            if (normalized === 'cancelled' ||
+                normalized === 'canceled') {
+                return {
+                    text: 'הזמנה מבוטלת',
+                    cssClass: 'cancelled'
+                };
+            }
+
+            if (normalized === 'pending') {
+                return {
+                    text: 'ממתינה לאישור',
+                    cssClass: ''
+                };
+            }
+
+            return {
+                text: status || 'סטטוס לא ידוע',
+                cssClass: ''
+            };
+        }
+
+        async function loadBookings() {
+            const token = localStorage.getItem('authToken');
+
+            if (!token) {
+                alert('יש להתחבר למערכת כדי לצפות בהזמנות!');
+                window.location.href = 'login.html';
+                return;
+            }
+
+            try {
+                // שליפת ההזמנות האמיתיות מהשרת
+                const response = await fetch(
+                    `${API_BASE_URL}/Bookings/mine`,
+                    {
+                        method: 'GET',
+                        headers: {
+                            'Accept': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        }
+                    }
+                );
+
+                if (response.status === 401) {
+                    throw new Error(
+                        'ההתחברות פגה או אינה תקינה. יש להתחבר מחדש.'
+                    );
+                }
+
+                if (response.status === 403) {
+                    throw new Error(
+                        'אין לך הרשאה לצפות בהזמנות.'
+                    );
+                }
+
+                if (!response.ok) {
+                    throw new Error(
+                        `שגיאה בקבלת ההזמנות מהשרת: ${response.status}`
+                    );
+                }
+
+                const bookings = await response.json();
+
+                if (!Array.isArray(bookings)) {
+                    throw new Error(
+                        'השרת החזיר נתונים בפורמט לא תקין.'
+                    );
+                }
+
+                if (bookings.length === 0) {
+                    container.innerHTML = `
+                        <div class="bookings-message">
+                            <h2>עדיין אין לך הזמנות</h2>
+                            <p>
+                                זה הזמן לבחור צימר ולשריין חופשה!
+                            </p>
+                            <a href="index.html" class="book-btn">
+                                למעבר למאגר הצימרים
+                            </a>
+                        </div>
+                    `;
+                    return;
+                }
+
+                // שליפת פרטי הצימרים לצורך הצגת השמות
+                const cottageIds = [
+                    ...new Set(
+                        bookings.map(booking => booking.cottageId)
+                    )
+                ];
+
+                const cottages = new Map();
+
+                await Promise.all(
+                    cottageIds.map(async cottageId => {
+                        try {
+                            const cottageResponse = await fetch(
+                                `${API_BASE_URL}/Cottages/${cottageId}`,
+                                {
+                                    headers: {
+                                        'Accept': 'application/json'
+                                    }
+                                }
+                            );
+
+                            if (cottageResponse.ok) {
+                                const cottage =
+                                    await cottageResponse.json();
+
+                                cottages.set(cottageId, cottage);
+                            }
+                        } catch (error) {
+                            console.warn(
+                                'לא ניתן לטעון את פרטי הצימר:',
+                                cottageId,
+                                error
+                            );
+                        }
+                    })
+                );
+
+                let html = '';
+
+                bookings.forEach(booking => {
+                    const cottage = cottages.get(booking.cottageId);
+
+                    const cottageName = cottage?.name ||
+                        `צימר מספר ${booking.cottageId}`;
+
+                    const status = getBookingStatus(booking.status);
+
+                    const price = cottage?.pricePerNight;
+
+                    html += `
+                        <div class="booking-card">
+                            <div class="booking-header">
+
+                                <div>
+                                    <span class="booking-status ${status.cssClass}">
+                                        ${escapeHtml(status.text)}
+                                    </span>
+
+                                    <h3>
+                                        🏠 ${escapeHtml(cottageName)}
+                                    </h3>
+
+                                    <p class="booking-number">
+                                        מספר הזמנה: ${booking.id}
+                                    </p>
+
+                                    <p class="booking-detail">
+                                        📅 <strong>כניסה:</strong>
+                                        ${formatDate(booking.startDate)}
+                                    </p>
+
+                                    <p class="booking-detail">
+                                        📅 <strong>יציאה:</strong>
+                                        ${formatDate(booking.endDate)}
+                                    </p>
+
+                                    <p class="booking-detail">
+                                        👥 <strong>מספר אורחים:</strong>
+                                        ${booking.guestsCount}
+                                    </p>
+
+                                    <p class="booking-detail">
+                                        💬 <strong>הערות:</strong>
+                                        ${escapeHtml(booking.notes || 'אין')}
+                                    </p>
+                                </div>
+
+                                <div style="text-align: left;">
+                                    ${price != null ? `
+                                        <span style="
+                                            font-size: 1.4rem;
+                                            font-weight: bold;
+                                            color: var(--accent-color);
+                                        ">
+                                            ₪${Number(price).toLocaleString('he-IL')}
+                                        </span>
+
+                                        <div style="color: #64748b;">
+                                            מחיר ללילה
+                                        </div>
+                                    ` : ''}
+                                </div>
+
+                            </div>
+                        </div>
+                    `;
+                });
+
+                container.innerHTML = html;
+
+            } catch (error) {
+                console.error('שגיאה בטעינת הזמנות:', error);
+
+                container.innerHTML = `
+                    <div class="bookings-message">
+                        <h2>לא ניתן לטעון את ההזמנות</h2>
+                        <p style="color: #b91c1c;">
+                            ${escapeHtml(error.message)}
+                        </p>
+                        <a href="login.html" class="book-btn">
+                            מעבר להתחברות
+                        </a>
+                    </div>
+                `;
+            }
+        }
+
+        document.addEventListener(
+            'DOMContentLoaded',
+            loadBookings
+        );
+    </script>
+
+</body>
+</html>

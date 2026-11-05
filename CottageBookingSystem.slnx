@@ -1,0 +1,21 @@
+<Solution>
+  <Folder Name="/frontend/">
+    <File Path="../פרויקט גבה סקריפט שנה ב/.html" />
+    <File Path="../פרויקט גבה סקריפט שנה ב/app.js" />
+    <File Path="../פרויקט גבה סקריפט שנה ב/cottage-details.html" />
+    <File Path="../פרויקט גבה סקריפט שנה ב/db.js" />
+    <File Path="../פרויקט גבה סקריפט שנה ב/index.html" />
+    <File Path="../פרויקט גבה סקריפט שנה ב/login.html" />
+    <File Path="../פרויקט גבה סקריפט שנה ב/style.css" />
+    <File Path="frontend/admin.html" />
+    <File Path="frontend/my-bookings.html" />
+  </Folder>
+  <Folder Name="/Solution Items/">
+    <File Path=".dockerignore" />
+  </Folder>
+  <Project Path="CottageBookingSystem.API/CottageBookingSystem.API.csproj" />
+  <Project Path="CottageBookingSystem.Core/CottageBookingSystem.Core.csproj" />
+  <Project Path="CottageBookingSystem.Data/CottageBookingSystem.Data.csproj" />
+  <Project Path="CottageBookingSystem.Service/CottageBookingSystem.Service.csproj" />
+  <Project Path="CottageBookingSystem.Tests/CottageBookingSystem.Tests.csproj" />
+</Solution>

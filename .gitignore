@@ -1,0 +1,30 @@
+# .NET build outputs
+**/bin/
+**/obj/
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+
+# Local configuration and secrets
+**/appsettings.Local.json
+**/appsettings.*.Local.json
+**/secrets.json
+.env
+.env.*
+!.env.example
+
+# Local databases and database logs
+*.mdf
+*.ldf
+*.ndf
+*.db
+*.sqlite
+*.sqlite3
+
+# Logs and temporary files
+*.log
+[Tt]emp/
+[Tt]mp/
+**/appsettings.Development.json
