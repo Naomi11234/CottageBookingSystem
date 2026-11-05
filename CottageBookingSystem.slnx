@@ -1,0 +1,17 @@
+<Solution>
+  <Folder Name="/frontend/">
+    <File Path="../../פרויקט משולב של דוטנט וגבה סקריפט/פרויקט גבה סקריפט שנה ב/admin.html" />
+    <File Path="../../פרויקט משולב של דוטנט וגבה סקריפט/פרויקט גבה סקריפט שנה ב/app.js" />
+    <File Path="../../פרויקט משולב של דוטנט וגבה סקריפט/פרויקט גבה סקריפט שנה ב/cottage-details.html" />
+    <File Path="../../פרויקט משולב של דוטנט וגבה סקריפט/פרויקט גבה סקריפט שנה ב/db.js" />
+    <File Path="../../פרויקט משולב של דוטנט וגבה סקריפט/פרויקט גבה סקריפט שנה ב/index.html" />
+    <File Path="../../פרויקט משולב של דוטנט וגבה סקריפט/פרויקט גבה סקריפט שנה ב/login.html" />
+    <File Path="../../פרויקט משולב של דוטנט וגבה סקריפט/פרויקט גבה סקריפט שנה ב/my-bookings.html" />
+    <File Path="../../פרויקט משולב של דוטנט וגבה סקריפט/פרויקט גבה סקריפט שנה ב/style.css" />
+  </Folder>
+  <Project Path="CottageBookingSystem.API/CottageBookingSystem.API.csproj" />
+  <Project Path="CottageBookingSystem.Core/CottageBookingSystem.Core.csproj" />
+  <Project Path="CottageBookingSystem.Data/CottageBookingSystem.Data.csproj" />
+  <Project Path="CottageBookingSystem.Service/CottageBookingSystem.Service.csproj" />
+  <Project Path="CottageBookingSystem.Tests/CottageBookingSystem.Tests.csproj" />
+</Solution>

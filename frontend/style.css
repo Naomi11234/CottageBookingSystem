@@ -1,0 +1,280 @@
+@import url('https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700&display=swap');
+
+:root {
+    --primary-color: #1e392a;     /* ירוק יער עמוק ויוקרתי */
+    --accent-color: #d97706;      /* זהב-חמים יוקרתי */
+    --bg-color: #f8fafc;          /* רקע בהיר ונקי */
+    --card-bg: #ffffff;
+    --text-dark: #0f172a;
+    --shadow-subtle: 0 4px 20px rgba(0, 0, 0, 0.06);
+    --shadow-hover: 0 12px 30px rgba(0, 0, 0, 0.12);
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Rubik', sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-dark);
+    margin: 0;
+    padding: 0;
+    direction: rtl;
+}
+
+.container {
+    max-width: 1250px;
+    margin: 0 auto;
+    padding: 0 25px;
+}
+
+/* --- תפריט עליון יוקרתי (Navbar) --- */
+.top-nav {
+    position: absolute;
+    top: 0;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 50px;
+    z-index: 100;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.6), transparent);
+}
+
+.logo {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: white;
+    text-decoration: none;
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.nav-links {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.nav-links span {
+    color: white;
+    font-weight: 500;
+    font-size: 1.05rem;
+    background: rgba(255, 255, 255, 0.15);
+    padding: 8px 16px;
+    border-radius: 30px;
+    backdrop-filter: blur(8px);
+}
+
+.nav-links a, .nav-links button {
+    color: white;
+    text-decoration: none;
+    font-size: 1rem;
+    font-weight: 500;
+    background: rgba(255, 255, 255, 0.15);
+    padding: 9px 20px;
+    border-radius: 30px;
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.nav-links a:hover, .nav-links button:hover {
+    background: var(--accent-color);
+    border-color: var(--accent-color);
+    transform: translateY(-2px);
+}
+
+/* --- באנר ראשי (Hero) --- */
+.hero-header {
+    background: linear-gradient(rgba(15, 23, 42, 0.55), rgba(15, 23, 42, 0.55)), 
+                url('https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1800&q=80') center/cover no-repeat;
+    height: 65vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: white;
+}
+
+.hero-content h1 {
+    font-size: 3.5rem;
+    margin-bottom: 12px;
+    font-weight: 700;
+    text-shadow: 0 4px 15px rgba(0,0,0,0.4);
+}
+
+.hero-content p {
+    font-size: 1.35rem;
+    font-weight: 300;
+    opacity: 0.95;
+}
+
+/* --- תיבת חיפוש חכם צפה --- */
+.filter-card {
+    background: white;
+    margin-top: -50px;
+    position: relative;
+    z-index: 10;
+    padding: 30px;
+    border-radius: 20px;
+    box-shadow: var(--shadow-hover);
+}
+
+.filter-card h3 {
+    margin-top: 0;
+    color: var(--primary-color);
+    margin-bottom: 20px;
+    font-size: 1.3rem;
+}
+
+.filter-grid {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.filter-grid input, .filter-grid select {
+    flex: 1;
+    min-width: 240px;
+    padding: 14px 18px;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    font-size: 1rem;
+    outline: none;
+    background: #f8fafc;
+    transition: all 0.3s;
+}
+
+.filter-grid input:focus, .filter-grid select:focus {
+    border-color: var(--primary-color);
+    background: white;
+    box-shadow: 0 0 0 3px rgba(30, 57, 42, 0.1);
+}
+
+/* --- כותרות ורשת צימרים --- */
+.section-title {
+    text-align: center;
+    font-size: 2.3rem;
+    color: var(--primary-color);
+    margin: 60px 0 30px;
+    font-weight: 700;
+}
+
+.cottages-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 30px;
+    margin-bottom: 70px;
+}
+
+.cottage-card {
+    background: var(--card-bg);
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: var(--shadow-subtle);
+    transition: all 0.35s ease;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #f1f5f9;
+}
+
+.cottage-card:hover {
+    transform: translateY(-8px);
+    box-shadow: var(--shadow-hover);
+}
+
+.cottage-img-wrapper {
+    position: relative;
+    height: 240px;
+    overflow: hidden;
+}
+
+.cottage-img-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.cottage-card:hover .cottage-img-wrapper img {
+    transform: scale(1.08);
+}
+
+.badge-location {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: rgba(15, 23, 42, 0.75);
+    color: white;
+    padding: 6px 14px;
+    border-radius: 30px;
+    font-size: 0.85rem;
+    backdrop-filter: blur(4px);
+    font-weight: 500;
+}
+
+.cottage-info {
+    padding: 25px;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.cottage-info h3 {
+    margin: 0 0 10px 0;
+    color: var(--primary-color);
+    font-size: 1.45rem;
+}
+
+.cottage-info p {
+    color: #64748b;
+    font-size: 0.95rem;
+    margin: 0 0 20px 0;
+    line-height: 1.6;
+}
+
+.card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: auto;
+    padding-top: 18px;
+    border-top: 1px solid #f1f5f9;
+}
+
+.price-tag {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--accent-color);
+}
+
+.book-btn {
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background 0.3s, transform 0.2s;
+}
+
+.book-btn:hover {
+    background: #112219;
+    transform: scale(1.02);
+}
+
+/* --- פוטר --- */
+footer {
+    background: var(--primary-color);
+    color: white;
+    text-align: center;
+    padding: 40px;
+    margin-top: 80px;
+    font-size: 1.05rem;
+}

@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>נופש בקליק - פאנל ניהול</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header class="main-header" style="padding: 30px; background: var(--primary-color); color: white; text-align: center;">
+        <h1>⚙️ פאנל ניהול מערכת</h1>
+        <p>ניהול מלאי הצימרים במסד הנתונים (למנהלים בלבד)</p>
+        <p><a href="index.html" style="color: white; text-decoration: underline;">חזרה לאתר הראשי</a></p>
+    </header>
+
+    <main class="container" style="margin-top: 40px; margin-bottom: 60px;">
+        
+        <!-- טופס הוספה / עריכת צימר -->
+        <section class="filter-card" style="margin-bottom: 40px;">
+            <h2 id="form-title">הוספת צימר חדש למערכת</h2>
+            <form onsubmit="handleFormSubmit(event)" style="display: flex; flex-direction: column; gap: 15px; margin-top: 20px;">
+                <input type="hidden" id="edit-cottage-id" value="">
+                
+                <label style="font-weight: bold;">שם הצימר:</label>
+                <input type="text" id="admin-name" placeholder="שם הצימר" required style="padding: 12px; border-radius: 8px; border: 1px solid #cbd5e1;">
+                
+                <label style="font-weight: bold;">מיקום:</label>
+                <input type="text" id="admin-location" placeholder="מיקום (למשל: אמירים)" required style="padding: 12px; border-radius: 8px; border: 1px solid #cbd5e1;">
+                
+                <label style="font-weight: bold;">מחיר ללילה (₪):</label>
+                <input type="number" id="admin-price" placeholder="מחיר ללילה (₪)" required style="padding: 12px; border-radius: 8px; border: 1px solid #cbd5e1;">
+                
+                <label style="font-weight: bold;">מקסימום אורחים:</label>
+                <input type="number" id="admin-guests" placeholder="מקסימום אורחים" required style="padding: 12px; border-radius: 8px; border: 1px solid #cbd5e1;">
+                
+                <div style="display: flex; gap: 10px; margin-top: 10px;">
+                    <button type="submit" id="submit-btn" class="book-btn" style="flex: 1; padding: 12px;">הוסף צימר</button>
+                    <button type="button" id="cancel-edit-btn" onclick="resetForm()" style="display: none; background: #64748b; color: white; border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer;">ביטול עריכה</button>
+                </div>
+            </form>
+        </section>
+
+        <!-- רשימת ניהול צימרים קיימים -->
+        <section class="filter-card">
+            <h2>רשימת הצימרים הקיימים במערכת</h2>
+            <div id="admin-cottages-list" style="margin-top: 20px;">
+                <!-- הצימרים יטענו לכאן -->
+            </div>
+        </section>
+
+    </main>
+
+    <footer>
+        <p>© 2026 נופש בקליק - מערכת לניהול והזמנת צימרים</p>
+    </footer>
+
+    <!-- קישור לקבצי הלוגיקה והתקשורת -->
+    <script src="db.js"></script>
+    <script src="app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const user = getCurrentUser();
+            const isUserAdmin = user && user.role && user.role.toLowerCase() === 'admin';
+            const isNaomi = user && user.email === 'naomi.avni21@gmail.com';
+
+            if (!user || (!isUserAdmin && !isNaomi)) {
+                alert('גישה חסומה! עליך להתחבר כמנהל מערכת.');
+                window.location.href = 'login.html';
+                return;
+            }
+
+            await loadAdminCottages();
+
+            // בדיקה האם הועבר מזהה צימר לעריכה ב-URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const editId = urlParams.get('edit');
+            if (editId) {
+                await populateFormForEdit(Number(editId));
+            }
+        });
+
+        async function loadAdminCottages() {
+            const container = document.getElementById('admin-cottages-list');
+            let cottages = [];
+            try {
+                cottages = await apiRequest('/cottages');
+            } catch (e) {
+                console.warn('טעינה מהשרת נכשלה, טוען מנתונים מקומיים', e);
+                cottages = JSON.parse(localStorage.getItem('localCottages') || '[]');
+            }
+            
+            if (!cottages || cottages.length === 0) {
+                cottages = [
+                    { id: 1, name: "אחוזת העץ בערפל", location: "אמירים", pricePerNight: 850, maxGuests: 4 },
+                    { id: 2, name: "בקתת האורנים בחרמון", location: "מג'דל שמס", pricePerNight: 650, maxGuests: 2 }
+                ];
+                localStorage.setItem('localCottages', JSON.stringify(cottages));
+            }
+
+            let html = '<ul style="list-style: none; padding: 0;">';
+            cottages.forEach(c => {
+                html += `
+                    <li style="display: flex; justify-content: space-between; align-items: center; background: #f8fafc; padding: 15px; margin-bottom: 10px; border: 1px solid #e2e8f0; border-radius: 10px;">
+                        <span><strong>${c.name}</strong> (${c.location}) - ₪${c.pricePerNight} ללילה (עד ${c.maxGuests} אורחים)</span>
+                        <div>
+                            <button onclick="populateFormForEdit(${c.id})" style="background: #0284c7; color: white; border: none; padding: 8px 14px; border-radius: 8px; cursor: pointer; margin-left: 8px;">ערוך</button>
+                            <button onclick="deleteCottageFromServer(${c.id})" style="background: #ef4444; color: white; border: none; padding: 8px 14px; border-radius: 8px; cursor: pointer;">מחק</button>
+                        </div>
+                    </li>
+                `;
+            });
+            html += '</ul>';
+            container.innerHTML = html;
+        }
+
+        async function populateFormForEdit(id) {
+            let cottages = [];
+            try {
+                cottages = await apiRequest('/cottages');
+            } catch (e) {
+                cottages = JSON.parse(localStorage.getItem('localCottages') || '[]');
+            }
+
+            const cottage = cottages.find(c => c.id === id);
+            if (cottage) {
+                document.getElementById('edit-cottage-id').value = cottage.id;
+                document.getElementById('admin-name').value = cottage.name;
+                document.getElementById('admin-location').value = cottage.location;
+                document.getElementById('admin-price').value = cottage.pricePerNight;
+                document.getElementById('admin-guests').value = cottage.maxGuests;
+
+                document.getElementById('form-title').innerText = `עריכת צימר: ${cottage.name}`;
+                document.getElementById('submit-btn').innerText = 'עדכן צימר';
+                document.getElementById('cancel-edit-btn').style.display = 'inline-block';
+                
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
+        function resetForm() {
+            document.getElementById('edit-cottage-id').value = '';
+            document.getElementById('admin-name').value = '';
+            document.getElementById('admin-location').value = '';
+            document.getElementById('admin-price').value = '';
+            document.getElementById('admin-guests').value = '';
+
+            document.getElementById('form-title').innerText = 'הוספת צימר חדש למערכת';
+            document.getElementById('submit-btn').innerText = 'הוסף צימר';
+            document.getElementById('cancel-edit-btn').style.display = 'none';
+            
+            // הסרת פרמטר ה-edit מה-URL במידה וקיים
+            if (window.location.search.includes('edit')) {
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+        }
+
+        async function handleFormSubmit(event) {
+            event.preventDefault();
+            const editId = document.getElementById('edit-cottage-id').value;
+            const name = document.getElementById('admin-name').value.trim();
+            const location = document.getElementById('admin-location').value.trim();
+            const price = Number(document.getElementById('admin-price').value);
+            const guests = Number(document.getElementById('admin-guests').value);
+
+            let localCottages = JSON.parse(localStorage.getItem('localCottages') || '[]');
+
+            if (editId) {
+                // מצב עדכון צימר קיים
+                const idNum = Number(editId);
+                const cottageData = {
+                    id: idNum,
+                    name: name,
+                    location: location,
+                    pricePerNight: price,
+                    maxGuests: guests,
+                    image: "https://images.unsplash.com/photo-1542718610-a1d656d1884c?auto=format&fit=crop&w=1000&q=80"
+                };
+
+                const index = localCottages.findIndex(c => c.id === idNum);
+                if (index !== -1) {
+                    localCottages[index] = cottageData;
+                } else {
+                    localCottages.push(cottageData);
+                }
+                localStorage.setItem('localCottages', JSON.stringify(localCottages));
+
+                try {
+                    await apiRequest(`/cottages/${idNum}`, {
+                        method: "PUT",
+                        body: JSON.stringify(cottageData)
+                    });
+                } catch (error) {
+                    console.warn('עדכון השרת בוצע במצב מקומי', error);
+                }
+
+                alert('הצימר עודכן בהצלחה!');
+            } else {
+                // מצב הוספת צימר חדש
+                const newCottage = {
+                    id: Date.now(),
+                    name: name,
+                    location: location,
+                    pricePerNight: price,
+                    maxGuests: guests,
+                    image: "https://images.unsplash.com/photo-1542718610-a1d656d1884c?auto=format&fit=crop&w=1000&q=80"
+                };
+
+                localCottages.push(newCottage);
+                localStorage.setItem('localCottages', JSON.stringify(localCottages));
+
+                try {
+                    await apiRequest("/cottages", {
+                        method: "POST",
+                        body: JSON.stringify(newCottage)
+                    });
+                } catch (error) {
+                    console.warn('הוספה בשרת בוצעה במצב מקומי', error);
+                }
+
+                alert('הצימר נוסף בהצלחה למערכת!');
+            }
+
+            window.location.href = 'index.html';
+        }
+
+        async function deleteCottageFromServer(id) {
+            if (confirm('האם את בטוחה שברצונך למחוק צימר זה?')) {
+                try {
+                    await apiRequest(`/cottages/${id}`, {
+                        method: "DELETE"
+                    });
+                } catch (error) {
+                    console.warn('מחיקה מהשרת נכשלה, מסיר מקומית');
+                }
+                
+                let localCottages = JSON.parse(localStorage.getItem('localCottages') || '[]');
+                localCottages = localCottages.filter(c => c.id !== id);
+                localStorage.setItem('localCottages', JSON.stringify(localCottages));
+
+                alert('הצימר נמחק בהצלחה!');
+                window.location.reload();
+            }
+        }
+    </script>
+</body>
+</html>
