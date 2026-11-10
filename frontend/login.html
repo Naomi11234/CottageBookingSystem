@@ -60,7 +60,7 @@
   </div>
   <script>
     'use strict';
-    const API_ROOT = 'https://localhost:7077/api/Auth';
+const API_ROOT = 'https://cottagebookingsystem.onrender.com/api/Auth';
     const loginForm = document.getElementById('login-form');
     const registerForm = document.getElementById('register-form');
     const feedback = document.getElementById('feedback');
@@ -111,7 +111,7 @@
         window.location.href = data.role.toLowerCase() === 'admin' ? 'admin.html' : 'index.html';
       } catch (error) {
         feedback.textContent = error instanceof TypeError
-          ? 'לא ניתן להגיע לשרת. בדקי שהוא פועל בפורט 7077 וש-CORS מאפשר את כתובת האתר.'
+         ?'לא ניתן להתחבר לשרת ב-Render. בדקי שהשרת פועל ושהגדרות CORS תקינות.'
           : error.message;
         feedback.hidden = false;
       } finally {

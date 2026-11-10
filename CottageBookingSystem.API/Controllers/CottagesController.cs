@@ -39,7 +39,23 @@ public sealed class CottagesController(
             result.PageSize,
             result.TotalCount));
     }
+    [HttpGet("amenities")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetAmenities(
+    CancellationToken cancellationToken)
+    {
+        var amenities = await dbContext.Amenities
+            .AsNoTracking()
+            .OrderBy(a => a.Id)
+            .Select(a => new
+            {
+                id = a.Id,
+                name = a.Name
+            })
+            .ToListAsync(cancellationToken);
 
+        return Ok(amenities);
+    }
     [HttpGet("{id:int}")]
     [AllowAnonymous]
     [ProducesResponseType(typeof(CottageDto), StatusCodes.Status200OK)]

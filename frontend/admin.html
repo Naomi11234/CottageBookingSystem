@@ -162,14 +162,10 @@
                         <div><label for="admin-guests">מקסימום אורחים:</label><input id="admin-guests" type="number" min="1" max="2147483647" step="1" required></div>
                         <fieldset style="border:0; padding:0; margin:0;">
                             <legend style="font-weight:600; margin-bottom:10px;">מאפייני הצימר:</legend>
-                            <div class="amenities-options">
-                                <label><input type="checkbox" name="amenity" value="1"> Wi-Fi</label>
-                                <label><input type="checkbox" name="amenity" value="2"> בריכה</label>
-                                <label><input type="checkbox" name="amenity" value="3"> ג'קוזי</label>
-                            </div>
+                            <div class="amenities-options" id="amenities-options" aria-live="polite">טוען מתקנים מהשרת...</div>
                         </fieldset>
                     </div>
-                    <p style="color:#64748b; font-size:.9rem;">המאפיינים שבחרת יישמרו בשרת ויוצגו באתר.</p>
+                    <p style="color:#64748b; font-size:.9rem;">רשימת המתקנים נטענת ממסד הנתונים, והמזהים נשלחים לשרת בעת השמירה.</p>
                     <div class="admin-actions">
                         <button id="submit-btn" class="book-btn" type="submit">הוסף צימר</button>
                         <button id="cancel-edit-btn" class="secondary-btn" type="button" hidden>ביטול עריכה</button>
@@ -187,7 +183,7 @@
 
     <script>
         'use strict';
-        const API_ROOT = 'https://localhost:7077/api';
+        const API_ROOT = 'https://cottagebookingsystem.onrender.com/api';
         const statusEl = document.getElementById('admin-status');
         const contentEl = document.getElementById('admin-content');
         const deniedEl = document.getElementById('access-denied');
@@ -196,8 +192,20 @@
         const submitBtn = document.getElementById('submit-btn');
         const cancelBtn = document.getElementById('cancel-edit-btn');
         const moreBtn = document.getElementById('load-more-btn');
-        const amenityNames = { 1: 'Wi-Fi', 2: 'Pool', 3: 'Hot tub' };
-        const amenityInputs = [...document.querySelectorAll('input[name="amenity"]')];
+        const amenitiesContainer = document.getElementById('amenities-options');
+        const amenityTranslations = {
+            'Wi-Fi': 'Wi-Fi', 'Pool': 'בריכה', 'Hot tub': 'ג׳קוזי',
+            'Parking': 'חניה', 'Air conditioning': 'מיזוג אוויר',
+            'Equipped kitchen': 'מטבח מאובזר', 'Balcony': 'מרפסת',
+            'BBQ': 'מנגל', 'Coffee machine': 'מכונת קפה', 'TV': 'טלוויזיה',
+            'Private yard': 'חצר פרטית', 'Heated pool': 'בריכה מחוממת',
+            'Sauna': 'סאונה', 'Children playground': 'מתקני משחק לילדים',
+            'Underfloor heating': 'חימום תת רצפתי', 'Breakfast': 'ארוחת בוקר',
+            'Sea view': 'נוף לים', 'Mountain view': 'נוף להרים',
+            'Fireplace': 'קמין', 'Outdoor seating area': 'פינת ישיבה בחוץ'
+        };
+        let availableAmenities = [];
+        let amenityInputs = [];
         let editId = null;
         let cottages = [];
         let nextPage = 1;
@@ -230,7 +238,7 @@
                     }
                 });
             } catch {
-                throw new Error('לא ניתן להתחבר לשרת. ודאי ש-CottageBookingSystem.API פועל בפורט 7077 ושכתובת האתר מורשית ב-CORS.');
+                throw new Error('לא ניתן להתחבר לשרת ב-Render. בדקי שהשרת זמין ושהגדרות CORS תקינות.');
             }
             if (!response.ok) {
                 const messages = {
@@ -243,6 +251,41 @@
                 throw Object.assign(new Error(messages[response.status] || `השרת החזיר שגיאה ${response.status}.`), { status: response.status });
             }
             return response.status === 204 ? null : response.json();
+        }
+
+        async function loadAmenities() {
+            submitBtn.disabled = true;
+            amenitiesContainer.textContent = 'טוען מתקנים מהשרת...';
+            try {
+                const result = await request('/Cottages/amenities');
+                if (!Array.isArray(result) || !result.every(a =>
+                    Number.isInteger(a.id) && a.id > 0 && typeof a.name === 'string')) {
+                    throw new Error('רשימת המתקנים שהתקבלה מהשרת אינה תקינה.');
+                }
+                availableAmenities = result;
+                amenitiesContainer.replaceChildren();
+                for (const amenity of result) {
+                    const label = document.createElement('label');
+                    const input = document.createElement('input');
+                    input.type = 'checkbox';
+                    input.name = 'amenity';
+                    input.value = String(amenity.id);
+                    label.append(input, document.createTextNode(' ' +
+                        (amenityTranslations[amenity.name] || amenity.name)));
+                    amenitiesContainer.append(label);
+                }
+                amenityInputs = [...amenitiesContainer.querySelectorAll('input[name="amenity"]')];
+                if (!result.length) {
+                    amenitiesContainer.textContent = 'אין מתקנים זמינים במסד הנתונים.';
+                }
+                submitBtn.disabled = false;
+                return true;
+            } catch (error) {
+                amenitiesContainer.textContent = 'לא ניתן לטעון מתקנים מהשרת. לא ניתן לשמור צימר עד לתיקון החיבור.';
+                showStatus(error.message, 'error');
+                submitBtn.disabled = true;
+                return false;
+            }
         }
 
         function resetForm() {
@@ -264,9 +307,11 @@
             document.getElementById('admin-location').value = cottage.location;
             document.getElementById('admin-price').value = cottage.pricePerNight;
             document.getElementById('admin-guests').value = cottage.maxGuests;
-            const selected = (cottage.amenities || []).map(value => String(value).trim().toLowerCase());
+            const selected = new Set((cottage.amenities || [])
+                .map(value => String(value).trim().toLowerCase()));
             amenityInputs.forEach(input => {
-                input.checked = selected.includes(amenityNames[Number(input.value)].toLowerCase());
+                const amenity = availableAmenities.find(a => a.id === Number(input.value));
+                input.checked = Boolean(amenity && selected.has(amenity.name.trim().toLowerCase()));
             });
             document.getElementById('form-title').textContent = 'עריכת צימר: ' + cottage.name;
             submitBtn.textContent = 'עדכן צימר';
@@ -362,6 +407,10 @@
             }
             const amenityIds = amenityInputs.filter(input => input.checked).map(input => Number(input.value));
             const payload = { name, location: locationValue, pricePerNight, maxGuests, amenityIds };
+            if (!availableAmenities.length) {
+                showStatus('אין רשימת מתקנים זמינה מהשרת. נסי לרענן את העמוד.', 'error');
+                return;
+            }
             submitBtn.disabled = true;
             try {
                 await request(editId === null ? '/Cottages' : `/Cottages/${editId}`, {
@@ -392,6 +441,8 @@
                 deniedEl.hidden = true;
                 contentEl.hidden = false;
                 showStatus('התחברת כמנהל. הנתונים נטענים מהשרת.', 'success');
+                const amenitiesLoaded = await loadAmenities();
+                if (!amenitiesLoaded) return;
                 await loadCottages();
                 const editParam = new URL(location.href).searchParams.get('edit');
                 if (editParam && /^\d+$/.test(editParam)) {
@@ -408,3 +459,7 @@
     </script>
 </body>
 </html>
+
+<!-- Injection By NetFree -->
+<script src="https://netfree.link/injection-script/note-in-site.js" type="text/javascript" async  id="netfree-note-site" jsondata="%7B%22noteSite%22:%22%D7%9B%D7%93%D7%99%20%D7%A9%D7%94%D7%AA%D7%9E%D7%95%D7%A0%D7%95%D7%AA%20%D7%91%D7%90%D7%AA%D7%A8%20%D7%94%D7%96%D7%94%20%D7%99%D7%97%D7%96%D7%A8%D7%95%20%D7%9E%D7%91%D7%93%D7%99%D7%A7%D7%94%2C%20%D7%99%D7%A9%20%D7%9C%D7%94%D7%92%D7%93%D7%99%D7%A8%20%5C%22%D7%90%D7%A4%D7%A9%D7%A8%20%D7%9C%D7%A1%D7%A0%D7%9F%20%D7%AA%D7%95%D7%9B%D7%9F%20%D7%A9%D7%99%D7%93%D7%95%D7%A2%20%D7%9B%D7%90%D7%99%D7%A9%D7%99%20%D7%90%D7%95%20%D7%A4%D7%A8%D7%98%D7%99%5C%22%20%D7%91%D7%94%D7%92%D7%93%D7%A8%D7%95%D7%AA%20%D7%A1%D7%99%D7%A0%D7%95%D7%9F%20%5B%5B%D7%A6%D7%90%D7%98_AI_%D7%91%D7%A0%D7%98%D7%A4%D7%A8%D7%99%7C%D7%94%D7%99%D7%9B%D7%A0%D7%A1%D7%95%20%D7%9C%D7%9B%D7%90%D7%9F%20%D7%9C%D7%94%D7%A1%D7%91%D7%A8%20%D7%9E%D7%A4%D7%95%D7%A8%D7%98%5D%5D%22%2C%22noteSiteEn%22:%22For%20images%20on%20this%20website%20to%20work%20you%20need%20to%20set%20%5C%22Filter%20content%20that%20is%20known%20as%20personal%20or%20private%5C%22%20%5B%5BAI_Chats_in_NetFree%7CClick%20here%20to%20read%20more%5D%5D%22%7D"></script><script src="//netfree.link/injection-script/go-payment.js" type="text/javascript" async ></script>
+<script src="//netfree.link/injection-script/popup-card-init.js" type="text/javascript" async ></script>

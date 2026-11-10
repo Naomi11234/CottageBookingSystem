@@ -1,5 +1,4 @@
-
-const API_BASE_URL = 'https://localhost:7077/api';
+const API_BASE_URL = 'https://cottagebookingsystem.onrender.com/api';
 
 let allCottages = [];
 
@@ -93,7 +92,7 @@ async function apiRequest(url, options = {}) {
         console.error('שגיאת חיבור לשרת:', error);
 
         throw new Error(
-            'לא ניתן להתחבר לשרת. ודאי ששרת ה-.NET פועל בפורט 7077.'
+           'לא ניתן להתחבר לשרת המקוון. בדקי שהשרת ב-Render פועל ושהחיבור לאינטרנט תקין.'
         );
     }
 
@@ -172,7 +171,7 @@ function getCottageImage(cottage) {
     }
 
     if (image.startsWith('/')) {
-        return `https://localhost:7077${image}`;
+       return `https://cottagebookingsystem.onrender.com${image}`;
     }
 
     if (/^https?:\/\//i.test(image)) {

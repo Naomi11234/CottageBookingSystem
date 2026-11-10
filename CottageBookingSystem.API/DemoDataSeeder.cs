@@ -23,12 +23,29 @@ public static class DemoDataSeeder
 
         var amenities = new[]
         {
-            "Wi-Fi",
-            "Pool",
-            "Hot tub",
-            "Air conditioning",
-            "Parking"
-        };
+          
+
+    "Wi-Fi",
+    "Pool",
+    "Hot tub",
+    "Parking",
+    "Air conditioning",
+    "Equipped kitchen",
+    "Balcony",
+    "BBQ",
+    "Coffee machine",
+    "TV",
+    "Private yard",
+    "Heated pool",
+    "Sauna",
+    "Children playground",
+    "Underfloor heating",
+    "Breakfast",
+    "Sea view",
+    "Mountain view",
+    "Fireplace",
+    "Outdoor seating area"
+    };
 
         foreach (var name in amenities)
         {
