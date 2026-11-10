@@ -32,42 +32,32 @@ public sealed class CottagesController(
             return BadRequest(new { message = "pageNumber must be positive and pageSize must be between 1 and 100." });
         }
 
-        var result = await cottageRepository.GetPagedWithAmenitiesAsync(pageNumber, pageSize, cancellationToken);
+        var result = await cottageRepository.GetPagedWithAmenitiesAsync(
+            pageNumber, pageSize, cancellationToken);
+
         return Ok(new PagedResult<CottageDto>(
             mapper.Map<IReadOnlyList<CottageDto>>(result.Items),
             result.PageNumber,
             result.PageSize,
             result.TotalCount));
     }
-    [HttpGet("amenities")]
-    [AllowAnonymous]
-    public async Task<IActionResult> GetAmenities(
-    CancellationToken cancellationToken)
-    {
-        var amenities = await dbContext.Amenities
-            .AsNoTracking()
-            .OrderBy(a => a.Id)
-            .Select(a => new
-            {
-                id = a.Id,
-                name = a.Name
-            })
-            .ToListAsync(cancellationToken);
 
-        return Ok(amenities);
-    }
     [HttpGet("{id:int}")]
     [AllowAnonymous]
     [ProducesResponseType(typeof(CottageDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<CottageDto>> GetCottage(int id, CancellationToken cancellationToken)
+    public async Task<ActionResult<CottageDto>> GetCottage(
+        int id,
+        CancellationToken cancellationToken)
     {
         if (id <= 0)
         {
             return BadRequest();
         }
 
-        var cottage = await cottageRepository.GetByIdWithAmenitiesAsync(id, cancellationToken);
+        var cottage = await cottageRepository.GetByIdWithAmenitiesAsync(
+            id, cancellationToken);
+
         return cottage is null ? NotFound() : Ok(mapper.Map<CottageDto>(cottage));
     }
 
@@ -89,17 +79,16 @@ public sealed class CottagesController(
 
         if (!cottageExists)
         {
-            return NotFound(new
-            {
-                message = "Cottage was not found."
-            });
+            return NotFound(new { message = "Cottage was not found." });
         }
+
+        var nowUtc = DateTime.UtcNow;
 
         var bookings = await dbContext.CottageBookings
             .AsNoTracking()
             .Where(b =>
                 b.CottageId == id &&
-                b.EndDate > DateTime.UtcNow &&
+                b.EndDate > nowUtc &&
                 b.Status != "Cancelled" &&
                 b.Status != "Canceled")
             .Select(b => new
@@ -149,7 +138,10 @@ public sealed class CottagesController(
         await cottageRepository.AddAsync(cottage, cancellationToken);
         await cottageRepository.SaveChangesAsync(cancellationToken);
 
-        return CreatedAtAction(nameof(GetCottage), new { id = cottage.Id }, mapper.Map<CottageDto>(cottage));
+        return CreatedAtAction(
+            nameof(GetCottage),
+            new { id = cottage.Id },
+            mapper.Map<CottageDto>(cottage));
     }
 
     [HttpPut("{id:int}")]
@@ -172,6 +164,7 @@ public sealed class CottagesController(
         var cottage = await dbContext.Cottages
             .Include(c => c.Amenities)
             .FirstOrDefaultAsync(c => c.Id == id, cancellationToken);
+
         if (cottage is null)
         {
             return NotFound();
@@ -188,6 +181,7 @@ public sealed class CottagesController(
         }
 
         cottage.Amenities.Clear();
+
         foreach (var amenity in amenities)
         {
             cottage.Amenities.Add(amenity);
@@ -209,7 +203,9 @@ public sealed class CottagesController(
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<IActionResult> DeleteCottage(int id, CancellationToken cancellationToken)
+    public async Task<IActionResult> DeleteCottage(
+        int id,
+        CancellationToken cancellationToken)
     {
         if (id <= 0)
         {
@@ -217,12 +213,14 @@ public sealed class CottagesController(
         }
 
         var cottage = await cottageRepository.GetByIdAsync(id, cancellationToken);
+
         if (cottage is null)
         {
             return NotFound();
         }
 
         cottageRepository.Remove(cottage);
+
         try
         {
             await cottageRepository.SaveChangesAsync(cancellationToken);

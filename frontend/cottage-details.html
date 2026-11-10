@@ -509,7 +509,7 @@
             type="submit"
             disabled
           >
-            שליחת הזמנה
+            המשך לסיכום הזמנה
           </button>
 
         </form>
@@ -528,7 +528,7 @@
 <script>
   'use strict';
 
-  const API_BASE_URL = 'https://localhost:7077/api';
+  const API_BASE_URL = 'https://cottagebookingsystem.onrender.com/api';
 
   const params = new URLSearchParams(window.location.search);
   const cottageId = Number(params.get('id'));
@@ -615,7 +615,7 @@
 
     if (typeof image === 'string') {
       if (image.startsWith('/')) {
-        return `https://localhost:7077${image}`;
+        return `https://cottagebookingsystem.onrender.com${image}`;
       }
 
       if (/^https?:\/\//i.test(image)) {
@@ -954,137 +954,39 @@
     }
   }
 
-  async function submitBooking(event) {
+  function submitBooking(event) {
     event.preventDefault();
-
     if (!currentCottage || !availabilityLoaded) {
-      showBookingMessage(
-        'פרטי הצימר או הזמינות עדיין לא נטענו.'
-      );
+      showBookingMessage('פרטי הצימר או הזמינות עדיין לא נטענו.');
       return;
     }
-
-    const token = getToken();
-
-    if (!token) {
-      showBookingMessage(
-        'כדי להזמין צימר יש להתחבר תחילה למערכת.'
-      );
+    if (!getToken()) {
+      showBookingMessage('כדי להזמין צימר יש להתחבר תחילה למערכת.');
       return;
     }
-
     const checkIn = $('check-in').value;
     const checkOut = $('check-out').value;
     const guests = Number($('guests').value);
-
-    const nights = calculateNights(checkIn, checkOut);
     const today = dateToLocalString(new Date());
-
-    if (!checkIn || !checkOut) {
-      showBookingMessage(
-        'בחרי בלוח השנה תאריך כניסה ותאריך יציאה.'
-      );
+    if (!checkIn || !checkOut || checkIn <= today || calculateNights(checkIn, checkOut) <= 0) {
+      showBookingMessage('בחרי תאריכי כניסה ויציאה עתידיים ותקינים.');
       return;
     }
-
-    if (checkIn <= today) {
-      showBookingMessage(
-        'תאריך הכניסה חייב להיות בעתיד.'
-      );
-      return;
-    }
-
-    if (nights <= 0) {
-      showBookingMessage(
-        'תאריך היציאה חייב להיות אחרי תאריך הכניסה.'
-      );
-      return;
-    }
-
     if (!isRangeAvailable(checkIn, checkOut)) {
-      showBookingMessage(
-        'התאריכים שבחרת כבר תפוסים. בחרי טווח אחר.'
-      );
+      showBookingMessage('התאריכים שבחרת אינם פנויים.');
       return;
     }
-
-    if (
-      !Number.isInteger(guests) ||
-      guests < 1 ||
-      guests > Number(currentCottage.maxGuests)
-    ) {
-      showBookingMessage(
-        `מספר האורחים חייב להיות בין 1 ל-${currentCottage.maxGuests}.`
-      );
+    if (!Number.isInteger(guests) || guests < 1 || guests > Number(currentCottage.maxGuests)) {
+      showBookingMessage(`מספר האורחים חייב להיות בין 1 ל-${currentCottage.maxGuests}.`);
       return;
     }
-
-    const button = $('booking-button');
-
-    button.disabled = true;
-    button.textContent = 'שולח הזמנה לשרת...';
-
-    try {
-      const bookingPayload = {
-        cottageId: currentCottage.id,
-        startDate: checkIn,
-        endDate: checkOut,
-        guestsCount: guests
-      };
-
-      const result = await apiRequest('/Bookings', {
-        method: 'POST',
-        body: JSON.stringify(bookingPayload)
-      });
-
-      console.log('תשובת שרת ההזמנות:', result);
-
-      showBookingMessage(
-        'בקשת ההזמנה נשמרה בהצלחה! הסטטוס שלה ממתין לאישור.',
-        true
-      );
-
-      const bookingsLink = document.createElement('a');
-      bookingsLink.href = 'my-bookings.html';
-      bookingsLink.className = 'bookings-link';
-      bookingsLink.textContent =
-        'לצפייה בהזמנות שלי';
-
-      $('booking-message').appendChild(bookingsLink);
-
-      $('booking-form').reset();
-
-      $('check-in').value = '';
-      $('check-out').value = '';
-
-      updateSelectedDates();
-
-      await loadOccupiedDates();
-
-    } catch (error) {
-      console.error('שגיאה בהזמנה:', error);
-
-      if (error.status === 409) {
-        showBookingMessage(
-          'הצימר אינו זמין בתאריכים שבחרת. בחרי תאריכים אחרים.'
-        );
-
-        await loadOccupiedDates();
-
-      } else if (error.status === 401) {
-        showBookingMessage(
-          'ההתחברות שלך פגה או אינה תקינה. התחברי מחדש.'
-        );
-      } else {
-        showBookingMessage(
-          'ההזמנה לא נשמרה: ' + error.message
-        );
-      }
-
-    } finally {
-      button.disabled = !availabilityLoaded;
-      button.textContent = 'שליחת הזמנה';
-    }
+    sessionStorage.setItem('pendingBooking', JSON.stringify({
+      cottageId: currentCottage.id,
+      startDate: checkIn,
+      endDate: checkOut,
+      guestsCount: guests
+    }));
+    window.location.href = 'booking.html';
   }
 
   document.addEventListener('DOMContentLoaded', async () => {
@@ -1121,3 +1023,7 @@
 
 </body>
 </html>
+
+<!-- Injection By NetFree -->
+<script src="https://netfree.link/injection-script/note-in-site.js" type="text/javascript" async  id="netfree-note-site" jsondata="%7B%22noteSite%22:%22%D7%9B%D7%93%D7%99%20%D7%A9%D7%94%D7%AA%D7%9E%D7%95%D7%A0%D7%95%D7%AA%20%D7%91%D7%90%D7%AA%D7%A8%20%D7%94%D7%96%D7%94%20%D7%99%D7%97%D7%96%D7%A8%D7%95%20%D7%9E%D7%91%D7%93%D7%99%D7%A7%D7%94%2C%20%D7%99%D7%A9%20%D7%9C%D7%94%D7%92%D7%93%D7%99%D7%A8%20%5C%22%D7%90%D7%A4%D7%A9%D7%A8%20%D7%9C%D7%A9%D7%9C%D7%95%D7%97%20%D7%9C%D7%91%D7%93%D7%99%D7%A7%D7%94%20%D7%AA%D7%9E%D7%95%D7%A0%D7%95%D7%AA%20%D7%91%D7%90%D7%AA%D7%A8%D7%99%D7%9D%20%D7%A4%D7%A8%D7%98%D7%99%D7%99%D7%9D%2C%20%D7%91%D7%9E%D7%A7%D7%95%D7%9D%20%D7%9C%D7%97%D7%A1%D7%95%D7%9D%20%D7%90%D7%95%D7%AA%D7%9F%5C%22%20%D7%91%D7%94%D7%92%D7%93%D7%A8%D7%95%D7%AA%20%D7%A1%D7%99%D7%A0%D7%95%D7%9F%20%5B%5B%D7%A6%D7%90%D7%98_AI_%D7%91%D7%A0%D7%98%D7%A4%D7%A8%D7%99%7C%D7%94%D7%99%D7%9B%D7%A0%D7%A1%D7%95%20%D7%9C%D7%9B%D7%90%D7%9F%20%D7%9C%D7%94%D7%A1%D7%91%D7%A8%20%D7%9E%D7%A4%D7%95%D7%A8%D7%98%5D%5D%22%2C%22noteSiteEn%22:%22For%20images%20on%20this%20website%20to%20work%20you%20need%20to%20set%20%5C%22Allow%20images%20on%20private%20sites%20to%20be%20sent%20for%20review%2C%20instead%20of%20blocking%20them%5C%22%20%5B%5BAI_Chats_in_NetFree%7CClick%20here%20to%20read%20more%5D%5D%22%7D"></script><script src="//netfree.link/injection-script/go-payment.js" type="text/javascript" async ></script>
+<script src="//netfree.link/injection-script/popup-card-init.js" type="text/javascript" async ></script>

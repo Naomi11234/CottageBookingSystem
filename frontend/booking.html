@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>סיכום הזמנה | נופש בקליק</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f7f9fb;color:#193529;font-family:Arial,sans-serif}header,footer{background:#1d3a2b;color:white;padding:22px 6%}header{display:flex;align-items:center;justify-content:space-between;gap:16px}header a{color:white}main{max-width:760px;margin:40px auto;padding:0 16px}.card{background:white;border-radius:18px;box-shadow:0 6px 25px #0001;padding:30px}h1{margin:0;font-size:25px}h2{margin-top:0}.line{display:flex;justify-content:space-between;gap:12px;padding:15px 0;border-bottom:1px solid #e4ece7}.line span:first-child{color:#51655a}.total{font-size:23px;font-weight:bold;color:#17643a}.message{padding:15px;border-radius:10px;margin:18px 0;background:#edf5ff}.error{background:#fff0f0;color:#a21c1c}.success{background:#e8f7ec;color:#17643a}.hidden{display:none}button,.btn{display:inline-block;border:0;border-radius:12px;padding:15px 24px;font-size:16px;text-decoration:none;cursor:pointer;background:#1d3a2b;color:white}button:disabled{opacity:.6;cursor:not-allowed}.actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:25px}.btn.secondary{background:#e8f5ec;color:#193529}footer{text-align:center;margin-top:60px}@media(max-width:550px){.card{padding:20px}.line{flex-direction:column;gap:5px}}
+</style>
+</head>
+<body>
+<header><h1>🌲 נופש בקליק</h1><a href="index.html">חזרה לצימרים</a></header>
+<main><section class="card"><h2>סיכום הזמנה</h2><p>בדקי את הפרטים לפני אישור ההזמנה.</p>
+<div id="message" class="message">טוען את פרטי ההזמנה...</div>
+<div id="summary" class="hidden">
+<div class="line"><span>צימר</span><strong id="cottage-name"></strong></div>
+<div class="line"><span>מיקום</span><strong id="location"></strong></div>
+<div class="line"><span>כניסה</span><strong id="start-date"></strong></div>
+<div class="line"><span>יציאה</span><strong id="end-date"></strong></div>
+<div class="line"><span>אורחים</span><strong id="guests"></strong></div>
+<div class="line"><span>לילות</span><strong id="nights"></strong></div>
+<div class="line"><span>מחיר ללילה</span><strong id="nightly-price"></strong></div>
+<div class="line total"><span>סה״כ</span><strong id="total"></strong></div>
+<div class="actions"><button id="confirm" type="button">אישור הזמנה</button><a id="back" class="btn secondary" href="index.html">חזרה לעריכה</a></div>
+</div></section></main>
+<footer>© 2026 נופש בקליק</footer>
+<script>
+'use strict';
+const API_BASE_URL='https://cottagebookingsystem.onrender.com/api';
+const $=id=>document.getElementById(id);
+const money=n=>'₪'+Number(n).toLocaleString('he-IL');
+const displayDate=s=>s.split('-').reverse().join('/');
+const nightsBetween=(a,b)=>Math.round((Date.parse(b+'T00:00:00Z')-Date.parse(a+'T00:00:00Z'))/86400000);
+let pending=null;
+let cottage=null;
+let submitting=false;
+function message(text,type='info'){$('message').textContent=text;$('message').className='message '+(type==='error'?'error':type==='success'?'success':'');}
+async function request(path,options={}){
+ const token=localStorage.getItem('authToken');
+ const response=await fetch(API_BASE_URL+path,{...options,headers:{'Content-Type':'application/json',...(token?{Authorization:'Bearer '+token}:{}),...(options.headers||{})}});
+ if(!response.ok){let text='שגיאת שרת: '+response.status;try{const d=await response.json();text=d.message||d.title||text;}catch{}const e=new Error(text);e.status=response.status;throw e;}
+ if(response.status===204)return null;
+ return (response.headers.get('content-type')||'').includes('application/json')?response.json():null;
+}
+async function init(){
+ try{
+  pending=JSON.parse(sessionStorage.getItem('pendingBooking')||'null');
+  if(!pending||!Number.isInteger(Number(pending.cottageId))||Number(pending.cottageId)<=0)throw new Error('לא נמצאו פרטי הזמנה. חזרי לדף הצימר ובחרי תאריכים.');
+  $('back').href='cottage-details.html?id='+encodeURIComponent(pending.cottageId);
+  if(!localStorage.getItem('authToken'))throw new Error('כדי לבצע הזמנה יש להתחבר תחילה למערכת.');
+  const today=new Date();const localToday=[today.getFullYear(),String(today.getMonth()+1).padStart(2,'0'),String(today.getDate()).padStart(2,'0')].join('-');
+  const nights=nightsBetween(pending.startDate,pending.endDate);
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(pending.startDate)||!/^\d{4}-\d{2}-\d{2}$/.test(pending.endDate)||pending.startDate<=localToday||nights<=0)throw new Error('תאריכי ההזמנה אינם תקינים.');
+  cottage=await request('/Cottages/'+encodeURIComponent(pending.cottageId));
+  if(!cottage)throw new Error('הצימר לא נמצא.');
+  if(!Number.isInteger(Number(pending.guestsCount))||Number(pending.guestsCount)<1||Number(pending.guestsCount)>Number(cottage.maxGuests))throw new Error('מספר האורחים אינו מתאים לצימר.');
+  const ranges=await request('/Cottages/'+encodeURIComponent(pending.cottageId)+'/occupied-dates');
+  if(!Array.isArray(ranges))throw new Error('לא ניתן לבדוק זמינות.');
+  if(ranges.some(r=>pending.startDate<String(r.endDate).slice(0,10)&&String(r.startDate).slice(0,10)<pending.endDate))throw new Error('התאריכים שבחרת כבר תפוסים. חזרי לבחור תאריכים אחרים.');
+  $('cottage-name').textContent=cottage.name;
+  $('location').textContent=cottage.location;
+  $('start-date').textContent=displayDate(pending.startDate);
+  $('end-date').textContent=displayDate(pending.endDate);
+  $('guests').textContent=pending.guestsCount;
+  $('nights').textContent=nights;
+  $('nightly-price').textContent=money(cottage.pricePerNight);
+  $('total').textContent=money(nights*Number(cottage.pricePerNight));
+  $('summary').classList.remove('hidden');
+  $('message').classList.add('hidden');
+ }catch(e){message(e.message,'error');}
+}
+$('confirm').addEventListener('click',async()=>{
+ if(submitting||!pending||!cottage)return;
+ submitting=true;$('confirm').disabled=true;message('שומר את ההזמנה בשרת...');
+ try{
+  const payload={cottageId:Number(pending.cottageId),startDate:pending.startDate,endDate:pending.endDate,guestsCount:Number(pending.guestsCount)};
+  const result=await request('/Bookings',{method:'POST',body:JSON.stringify(payload)});
+  sessionStorage.removeItem('pendingBooking');
+  message('ההזמנה נשמרה בהצלחה! הסטטוס שלה ממתין לאישור.','success');
+  $('confirm').remove();$('back').href='my-bookings.html';$('back').textContent='צפייה בהזמנות שלי';
+ }catch(e){
+  message(e.status===409?'הצימר כבר תפוס בתאריכים האלה. חזרי לבחור תאריכים אחרים.':e.status===401?'ההתחברות פגה. התחברי מחדש.':'לא ניתן לשמור את ההזמנה: '+e.message,'error');
+  submitting=false;$('confirm').disabled=false;
+ }
+});
+init();
+</script>
+</body></html>
+
+<!-- Injection By NetFree -->
+<script src="https://netfree.link/injection-script/note-in-site.js" type="text/javascript" async  id="netfree-note-site" jsondata="%7B%22noteSite%22:%22%D7%9B%D7%93%D7%99%20%D7%A9%D7%94%D7%AA%D7%9E%D7%95%D7%A0%D7%95%D7%AA%20%D7%91%D7%90%D7%AA%D7%A8%20%D7%94%D7%96%D7%94%20%D7%99%D7%97%D7%96%D7%A8%D7%95%20%D7%9E%D7%91%D7%93%D7%99%D7%A7%D7%94%2C%20%D7%99%D7%A9%20%D7%9C%D7%94%D7%92%D7%93%D7%99%D7%A8%20%5C%22%D7%90%D7%A4%D7%A9%D7%A8%20%D7%9C%D7%A9%D7%9C%D7%95%D7%97%20%D7%9C%D7%91%D7%93%D7%99%D7%A7%D7%94%20%D7%AA%D7%9E%D7%95%D7%A0%D7%95%D7%AA%20%D7%91%D7%90%D7%AA%D7%A8%D7%99%D7%9D%20%D7%A4%D7%A8%D7%98%D7%99%D7%99%D7%9D%2C%20%D7%91%D7%9E%D7%A7%D7%95%D7%9D%20%D7%9C%D7%97%D7%A1%D7%95%D7%9D%20%D7%90%D7%95%D7%AA%D7%9F%5C%22%20%D7%91%D7%94%D7%92%D7%93%D7%A8%D7%95%D7%AA%20%D7%A1%D7%99%D7%A0%D7%95%D7%9F%20%5B%5B%D7%A6%D7%90%D7%98_AI_%D7%91%D7%A0%D7%98%D7%A4%D7%A8%D7%99%7C%D7%94%D7%99%D7%9B%D7%A0%D7%A1%D7%95%20%D7%9C%D7%9B%D7%90%D7%9F%20%D7%9C%D7%94%D7%A1%D7%91%D7%A8%20%D7%9E%D7%A4%D7%95%D7%A8%D7%98%5D%5D%22%2C%22noteSiteEn%22:%22For%20images%20on%20this%20website%20to%20work%20you%20need%20to%20set%20%5C%22Allow%20images%20on%20private%20sites%20to%20be%20sent%20for%20review%2C%20instead%20of%20blocking%20them%5C%22%20%5B%5BAI_Chats_in_NetFree%7CClick%20here%20to%20read%20more%5D%5D%22%7D"></script><script src="//netfree.link/injection-script/go-payment.js" type="text/javascript" async ></script>
+<script src="//netfree.link/injection-script/popup-card-init.js" type="text/javascript" async ></script>
