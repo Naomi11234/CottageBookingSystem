@@ -143,7 +143,22 @@ public sealed class CottagesController(
             new { id = cottage.Id },
             mapper.Map<CottageDto>(cottage));
     }
+    [HttpGet("amenities")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetAmenities(CancellationToken cancellationToken)
+    {
+        var amenities = await dbContext.Amenities
+            .AsNoTracking()
+            .OrderBy(amenity => amenity.Name)
+            .Select(amenity => new
+            {
+                id = amenity.Id,
+                name = amenity.Name
+            })
+            .ToListAsync(cancellationToken);
 
+        return Ok(amenities);
+    }
     [HttpPut("{id:int}")]
     [Authorize(Roles = RoleNames.Admin)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
