@@ -138,6 +138,14 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+Console.WriteLine("STARTUP: AdminSeeder starting");
 await AdminSeeder.SeedAsync(app.Services, app.Configuration);
+Console.WriteLine("STARTUP: AdminSeeder completed");
+
+Console.WriteLine("STARTUP: DemoDataSeeder starting");
 await DemoDataSeeder.SeedAsync(app.Services, app.Configuration);
+Console.WriteLine("STARTUP: DemoDataSeeder completed");
+
+Console.WriteLine("STARTUP: Starting HTTP server");
 app.Run();
