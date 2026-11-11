@@ -82,7 +82,7 @@ public sealed class CottagesController(
             return NotFound(new { message = "Cottage was not found." });
         }
 
-        var nowUtc = DateTime.UtcNow;
+        var nowUtc = DateTime.SpecifyKind(DateTime.UtcNow, DateTimeKind.Unspecified);
 
         var bookings = await dbContext.CottageBookings
             .AsNoTracking()
