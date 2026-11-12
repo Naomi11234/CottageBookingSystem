@@ -1,5 +1,4 @@
-﻿
-using CottageBookingSystem.Core.Entities;
+﻿using CottageBookingSystem.Core.Entities;
 using CottageBookingSystem.Core.Security;
 using CottageBookingSystem.Data;
 using Microsoft.AspNetCore.Identity;
@@ -15,37 +14,32 @@ public static class DemoDataSeeder
     {
         using var scope = services.CreateScope();
 
-        var db = scope.ServiceProvider
-            .GetRequiredService<AppDbContext>();
-
-        var hasher = scope.ServiceProvider
-            .GetRequiredService<IPasswordHasher<User>>();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var hasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher<User>>();
 
         var amenities = new[]
         {
-          
-
-    "Wi-Fi",
-    "Pool",
-    "Hot tub",
-    "Parking",
-    "Air conditioning",
-    "Equipped kitchen",
-    "Balcony",
-    "BBQ",
-    "Coffee machine",
-    "TV",
-    "Private yard",
-    "Heated pool",
-    "Sauna",
-    "Children playground",
-    "Underfloor heating",
-    "Breakfast",
-    "Sea view",
-    "Mountain view",
-    "Fireplace",
-    "Outdoor seating area"
-    };
+            "Wi-Fi",
+            "Pool",
+            "Hot tub",
+            "Parking",
+            "Air conditioning",
+            "Equipped kitchen",
+            "Balcony",
+            "BBQ",
+            "Coffee machine",
+            "TV",
+            "Private yard",
+            "Heated pool",
+            "Sauna",
+            "Children playground",
+            "Underfloor heating",
+            "Breakfast",
+            "Sea view",
+            "Mountain view",
+            "Fireplace",
+            "Outdoor seating area"
+        };
 
         foreach (var name in amenities)
         {
@@ -72,7 +66,9 @@ public static class DemoDataSeeder
         foreach (var item in cottages)
         {
             if (await db.Cottages.AnyAsync(c => c.Name == item.Name))
+            {
                 continue;
+            }
 
             var cottage = new Cottage
             {
@@ -84,7 +80,9 @@ public static class DemoDataSeeder
             };
 
             foreach (var amenityName in item.Amenities)
+            {
                 cottage.Amenities.Add(amenityLookup[amenityName]);
+            }
 
             db.Cottages.Add(cottage);
         }
@@ -111,7 +109,9 @@ public static class DemoDataSeeder
             var email = item.Email.ToUpperInvariant();
 
             if (await db.Users.AnyAsync(u => u.Email == email))
+            {
                 continue;
+            }
 
             var user = new User
             {
@@ -120,8 +120,7 @@ public static class DemoDataSeeder
                 Role = RoleNames.Customer
             };
 
-            user.PasswordHash =
-                hasher.HashPassword(user, demoPassword);
+            user.PasswordHash = hasher.HashPassword(user, demoPassword);
 
             db.Users.Add(user);
         }
@@ -143,11 +142,24 @@ public static class DemoDataSeeder
 
         foreach (var item in bookingData)
         {
-            var cottage = await db.Cottages
-                .SingleAsync(c => c.Name == item.Cottage);
+            var demoCottage = cottages.Single(c => c.Name == item.Cottage);
+            var matchingCottages = await db.Cottages
+                .Where(c => c.Name == demoCottage.Name &&
+                            c.Location == demoCottage.Location)
+                .Take(2)
+                .ToListAsync();
 
-            var user = await db.Users
-                .SingleAsync(u => u.Email == item.Email.ToUpperInvariant());
+            if (matchingCottages.Count != 1)
+            {
+                Console.WriteLine(
+                    $"Demo booking skipped: expected one cottage named " +
+                    $"'{demoCottage.Name}' in '{demoCottage.Location}'.");
+                continue;
+            }
+
+            var cottage = matchingCottages[0];
+            var email = item.Email.ToUpperInvariant();
+            var user = await db.Users.SingleAsync(u => u.Email == email);
 
             var bookingStart = start.AddDays(item.Offset);
             var bookingEnd = bookingStart.AddDays(item.Nights);
@@ -159,7 +171,9 @@ public static class DemoDataSeeder
                 b.EndDate == bookingEnd);
 
             if (exists)
+            {
                 continue;
+            }
 
             db.CottageBookings.Add(new CottageBooking
             {
